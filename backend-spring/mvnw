@@ -1,0 +1,43 @@
+#!/bin/sh
+# Maven Wrapper script
+# Licensed to the Apache Software Foundation (ASF)
+
+set -e
+
+MAVEN_WRAPPER_JAR=".mvn/wrapper/maven-wrapper.jar"
+MAVEN_WRAPPER_PROPERTIES=".mvn/wrapper/maven-wrapper.properties"
+
+# Determine Maven distribution URL from properties
+DISTRIBUTION_URL=$(grep distributionUrl "$MAVEN_WRAPPER_PROPERTIES" | sed 's/distributionUrl=//')
+
+# Find JAVA_HOME
+if [ -n "$JAVA_HOME" ]; then
+  JAVACMD="$JAVA_HOME/bin/java"
+else
+  JAVACMD="java"
+fi
+
+# Check Java version
+JAVA_VERSION=$("$JAVACMD" -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d. -f1)
+if [ "$JAVA_VERSION" -lt 17 ] 2>/dev/null; then
+  echo "ERROR: Spring Boot 3 requires Java 17+. Found Java $JAVA_VERSION."
+  echo "Please install Java 21: brew install openjdk@21"
+  echo "Then set: export JAVA_HOME=\$(brew --prefix openjdk@21)"
+  exit 1
+fi
+
+# Use mvn if available
+if command -v mvn >/dev/null 2>&1; then
+  exec mvn "$@"
+fi
+
+# Download Maven wrapper jar if missing
+if [ ! -f "$MAVEN_WRAPPER_JAR" ]; then
+  WRAPPER_URL=$(grep wrapperUrl "$MAVEN_WRAPPER_PROPERTIES" | sed 's/wrapperUrl=//')
+  echo "Downloading Maven Wrapper..."
+  if command -v curl >/dev/null 2>&1; then
+    curl -o "$MAVEN_WRAPPER_JAR" "$WRAPPER_URL" 2>/dev/null || true
+  fi
+fi
+
+exec "$JAVACMD" -jar "$MAVEN_WRAPPER_JAR" "$@"
